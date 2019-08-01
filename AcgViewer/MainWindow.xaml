@@ -1,0 +1,121 @@
+﻿<Window x:Class="AcgViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AcgViewer"
+        mc:Ignorable="d"
+        Title="AcgViewer" Height="680" Width="1100" WindowStyle="None" ResizeMode="NoResize"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        >
+    <materialDesign:DialogHost Identifier="RootDialog" SnackbarMessageQueue="{Binding ElementName=MainSnackbar, Path=MessageQueue}">
+        <materialDesign:DrawerHost IsLeftDrawerOpen="{Binding ElementName=MenuToggleButton, Path=IsChecked}">
+            <materialDesign:DrawerHost.LeftDrawerContent>
+                <WrapPanel Width="260" Orientation="Horizontal">
+                    <TextBlock Margin="16" Text="Sites" DockPanel.Dock="Top" Width="150" FontSize="25" />
+                    <ToggleButton Style="{StaticResource MaterialDesignHamburgerToggleButton}" 
+                                    HorizontalAlignment="Right" Margin="16"
+                                    IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}" />
+                    <ListBox x:Name="SitesListBox" Margin="0 16 0 16" SelectedIndex="0"  Width="260">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Path = SiteName}" Width="260" FontSize="20" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonUp="TextBlock_MouseLeftButtonUp"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                </WrapPanel>
+            </materialDesign:DrawerHost.LeftDrawerContent>
+            <Grid>
+                <StackPanel HorizontalAlignment="Center"  VerticalAlignment="Top" Width="1100">
+                    <Grid>
+                        <Rectangle Fill="White" Height="28.5" VerticalAlignment="Top"/>
+                        <TextBlock FontSize="22" Margin="5,0,0,0"   MouseLeftButtonDown="Rectangle_MouseLeftButtonDown">Acg Viewer Beta</TextBlock>
+                        <Button x:Name="CloseButton" Style="{DynamicResource MaterialDesignToolButton}" HorizontalAlignment="Right" Height="28" VerticalAlignment="Top" Width="40"  Click="Exit">
+                            <materialDesign:PackIcon Kind="Close" d:LayoutOverrides="HorizontalAlignment" Foreground="Black"/>
+                        </Button>
+                    </Grid>
+                    <Canvas Height="70" Width="1100" >
+                        <Rectangle Height="70" Fill="Black" Width="1100"/>
+                        <ToggleButton x:Name="MenuToggleButton" Style="{DynamicResource MaterialDesignHamburgerToggleButton}" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Top" Height="29" Width="29" Canvas.Left="10" Canvas.Top="18" />
+                        <TextBlock x:Name="SiteText" Text="{Binding SiteName}" HorizontalAlignment="Left" Height="30" TextWrapping="NoWrap"  Width="185" Foreground="White"  FontSize="25" FontWeight="Bold" Canvas.Left="45" Canvas.Top="18"/>
+
+                        <TextBox x:Name="SearchTextBox" Text="{Binding SearchTextBoxText}" Width="330" Canvas.Top="18" Height="30" FontSize="20" Foreground="White" FontStyle="Italic" materialDesign:HintAssist.Hint="输入搜索内容..." AllowDrop="False" KeyDown="TextBox_KeyDown" IsEnabled="{Binding IsNotSearching}" Canvas.Left="235"/>
+                        <ProgressBar  IsIndeterminate="True"  Canvas.Bottom="0" Height="4" Width="1100" Visibility="{Binding IsLoadingProgressBar}" />
+
+
+                    </Canvas>
+                    <ListView Width="1100" Height="582" x:Name="ImgListView" ItemsSource="{Binding ImgsItemSourse}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.ScrollChanged="ImgListView_ScrollChanged" ScrollViewer.CanContentScroll="True"  VirtualizingStackPanel.IsVirtualizing = "True" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingStackPanel.VirtualizationMode = "Recycling">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel>
+                                </WrapPanel>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                    </ListView>
+                </StackPanel>
+                <StackPanel>
+
+                </StackPanel>
+                <Button x:Name="LastPageButton" Visibility="Hidden"  HorizontalAlignment="Right" VerticalAlignment="Bottom" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Margin="0,0,136,40" Height="56" Width="56" Click="LastPageButton_Click" >
+                    <materialDesign:PackIcon Kind="NavigateBefore" Height="40" Width="40" />
+                </Button>
+                <Button x:Name="NextPageButton" Visibility="Hidden" HorizontalAlignment="Right" VerticalAlignment="Bottom" Style="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Margin="0,0,14,40" Height="56" Width="56" Click="NextPageButton_Click" >
+                    <materialDesign:PackIcon Kind="NavigateNext" Height="40" Width="40" />
+                </Button>
+                <materialDesign:PopupBox 
+                    x:Name="PopupBoxButton"
+                    Style="{StaticResource MaterialDesignMultiFloatingActionPopupBox}"
+                                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                 Margin="0,0,75,40"
+                                 MouseEnter="PopupBox_MouseMove"
+                                 >
+                    <StackPanel>
+                        <Button ToolTip="关于作者"
+                        Background="{DynamicResource SecondaryAccentBrush}"
+                        Foreground="{DynamicResource SecondaryAccentForegroundBrush}"
+                       >
+                            <materialDesign:PackIcon Kind="About" />
+                        </Button>
+                        <Button ToolTip="下载图片" 
+                        Background="{DynamicResource SecondaryAccentBrush}"
+                        Foreground="{DynamicResource SecondaryAccentForegroundBrush}"
+                                Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                        >
+                            <materialDesign:PackIcon Kind="Download" />
+                            <Button.CommandParameter>
+                                <StackPanel Margin="10">
+                                    <!--<ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
+                                    <Button Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
+                                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                                        CommandParameter="Sample2Cancel"
+                                        HorizontalAlignment="Center">CANCEL</Button>-->
+                                    <local:DownloadMsg />
+                                </StackPanel>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button ToolTip="设置" 
+                        Background="{DynamicResource SecondaryAccentBrush}"
+                        Foreground="{DynamicResource SecondaryAccentForegroundBrush}"
+                                Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                        >
+                            <materialDesign:PackIcon Kind="Settings" />
+                            <Button.CommandParameter>
+                                <StackPanel Margin="10">
+                                    <local:DownloadMsg />
+                                </StackPanel>
+                            </Button.CommandParameter>
+                        </Button>
+                    </StackPanel>
+                </materialDesign:PopupBox>
+            </Grid>
+        </materialDesign:DrawerHost>
+    </materialDesign:DialogHost>
+</Window>
