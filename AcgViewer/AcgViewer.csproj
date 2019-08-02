@@ -85,7 +85,6 @@
     <Compile Include="Tools\CommonData.cs" />
     <Compile Include="Tools\Download.cs" />
     <Compile Include="Tools\UsefulTools.cs" />
-    <Compile Include="Tools\WebDownload.cs" />
     <Page Include="DownloadMsg.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

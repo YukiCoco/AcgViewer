@@ -69,8 +69,9 @@ namespace CSharpKonachan
         /// <summary>
         /// 重写WebClient 使支持TimeOut
         /// </summary>
-        private class WebClientEx : WebClient
+        private class WebClientWithTimeout : WebClient
         {
+
             protected override WebRequest GetWebRequest(Uri uri)
             {
                 WebRequest w = base.GetWebRequest(uri);
@@ -81,10 +82,30 @@ namespace CSharpKonachan
 
         string GetUrl(string url)
         {
-            using(var x = new WebClientEx())
+            using(var x = new WebClientWithTimeout())
             {
                 x.Encoding = Encoding.UTF8;
-                return x.DownloadString(url);
+                bool isTimeout = false;
+                string result = "";
+                do
+                {
+                    try
+                    {
+                        result = x.DownloadString(url);
+                    }
+                    catch(WebException we)
+                    {
+                        switch (we.Status)
+                        {
+                            case WebExceptionStatus.Timeout:
+                                isTimeout = true;
+                                break;
+                            default:
+                                throw we;
+                        }
+                    }
+                } while (isTimeout);
+                return result;
             }
         }
 
@@ -144,11 +165,31 @@ namespace CSharpKonachan
             {
                 url += " rating:safe";
             }
-            using (WebClient webclient = new WebClient())
+            using (WebClientWithTimeout webclient = new WebClientWithTimeout())
             {
                 //伪装成Chrome
                 webclient.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36");
-                string result = Encoding.GetEncoding("UTF-8").GetString(webclient.DownloadData(url.Replace(".json", "")));
+                bool isTimeout = false;
+                string result = "";
+                do
+                {
+                    try
+                    {
+                        result = Encoding.GetEncoding("UTF-8").GetString(webclient.DownloadData(url.Replace(".json", "")));
+                    }
+                    catch(WebException we)
+                    {
+                        switch (we.Status)
+                        {
+                            case WebExceptionStatus.Timeout:
+                                isTimeout = true;
+                                break;
+                            default:
+                                throw new Exception(we.Message);
+                        }
+                    }
+                } while (isTimeout);
+                
                 string patten = @"(href|rel|title)=""([^""]*)";
                 List<Element> elements = new List<Element>();
                 Regex.Matches(result, patten).Cast<Match>().ToList().ForEach(x =>
@@ -163,7 +204,7 @@ namespace CSharpKonachan
                     }
                 });
                 Element lastPageElement = elements.Find(x => x.title == "Last Page");
-                //别问我这是什么逻辑，当时就是这样查源码的QwQ
+                //别问我这是什么逻辑，当时就是这样翻源码的QwQ
                 //能用就好（有时间会改改
                 if (lastPageElement != null)
                 {
@@ -173,7 +214,6 @@ namespace CSharpKonachan
                     //Console.WriteLine("共找到{0}页内容，正在解析...", pageCount);
                 }
             }
-
             return pageCount;
         }
 

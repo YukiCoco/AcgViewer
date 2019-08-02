@@ -112,6 +112,7 @@ namespace AcgViewer
             InitializeComponent();
             this.DataContext = dataLib;
             dataLib.DownloadButtonIsEnabled = true;
+            dataLib.MultiCheck = true;
         }
 
         private async void Button_ClickAsync(object sender, RoutedEventArgs e)
@@ -144,7 +145,7 @@ namespace AcgViewer
                     }
                     dataLib.DownloadProgressBarMaximum = postsSum;
                     //开始下载
-                    WebDownload webDownload = new WebDownload();
+                    Download webDownload = new Download();
                     foreach (var item in postArray)
                     {
                         webDownload.DownloadImgs(item, dataLib.DirectoryText);
@@ -162,7 +163,7 @@ namespace AcgViewer
                     //图片总数
                     dataLib.DownloadProgressBarMaximum = posts.Count;
                     //开始下载
-                    WebDownload webDownload = new WebDownload();
+                    Download webDownload = new Download();
                     webDownload.DownloadImgs(posts, dataLib.DirectoryText);
                 });
             }

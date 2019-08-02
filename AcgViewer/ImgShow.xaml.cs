@@ -101,7 +101,8 @@ namespace AcgViewer
                         }
                         catch
                         {
-                            throw new Exception("图片加载错误");
+                            MainWindow.dataLib.ImgsItemSourse.Remove(this);
+                            //throw new Exception("图片加载错误");
                         }
                         Img.Source = bi;
                     }

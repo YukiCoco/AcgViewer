@@ -167,14 +167,17 @@ namespace AcgViewer
 
             }
         }
-        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        private async void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if(e.Key == Key.Enter)
             {
                 dataLib.ImgsItemSourse.Clear();
                 List<string> tags = new List<string>();
                 tags.Add(SearchTextBox.Text);
-                CommonData.PostCount = booru.booruClient.GetPageCount(tags);
+                await Task.Run(() =>
+                {
+                    CommonData.PostCount = booru.booruClient.GetPageCount(tags);
+                });
                 booru.SearchPost(CommonData.CurrentPage, SearchTextBox.Text);
             }
         }
