@@ -92,6 +92,7 @@ namespace CSharpKonachan
                     try
                     {
                         result = x.DownloadString(url);
+                        isTimeout = false;
                     }
                     catch(WebException we)
                     {
@@ -176,6 +177,7 @@ namespace CSharpKonachan
                     try
                     {
                         result = Encoding.GetEncoding("UTF-8").GetString(webclient.DownloadData(url.Replace(".json", "")));
+                        isTimeout = false;
                     }
                     catch(WebException we)
                     {
