@@ -27,8 +27,8 @@ namespace AcgViewer.Tools
             set
             {
                 _currentImgDownloadCount = value;
-                if (_currentImgDownloadCount == 0)
-                    DownloadMsg.dataLib.DownloadButtonIsEnabled = true;
+                //if (_currentImgDownloadCount == 0)
+                //    DownloadMsg.dataLib.DownloadButtonIsEnabled = true;
 
             }
         }
@@ -46,7 +46,7 @@ namespace AcgViewer.Tools
             protected override WebRequest GetWebRequest(Uri address)
             {
                 WebRequest wr = base.GetWebRequest(address);
-                wr.Timeout = 10000; // timeout in milliseconds (ms) 十秒钟
+                wr.Timeout = 15000; // timeout in milliseconds (ms) 十秒钟
                 return wr;
             }
         }
@@ -102,13 +102,27 @@ namespace AcgViewer.Tools
                             Thread downloadThread = new Thread(new ThreadStart(() =>
                             {
                                 bool isTimeout = false;
+                                WebClientWithTimeout webClient = new WebClientWithTimeout();
                                 do
                                 {
-                                    WebClientWithTimeout webClient = new WebClientWithTimeout();
+                                    if (isTimeout)
+                                    {
+                                        lock (o)
+                                        {
+                                            EventHandler eventHandler = new EventHandler((object o, EventArgs e) =>
+                                            {
+                                                File.Delete(filePath);
+                                            });
+                                            webClient.Dispose();
+                                            webClient.Disposed += eventHandler;
+                                            webClient = new WebClientWithTimeout();
+                                        }
+                                    }
                                     //webClient.DownloadFileCompleted += WebClient_DownloadFileCompleted;
                                     try
                                     {
                                         webClient.DownloadFile(new Uri(item.file_url), filePath);
+                                        Debug.WriteLine(item.id + "下载完毕");
                                         downloadCompletedOrError();
                                         isTimeout = false;
                                     }
