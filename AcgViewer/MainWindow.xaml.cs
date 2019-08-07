@@ -171,6 +171,7 @@ namespace AcgViewer
         {
             if(e.Key == Key.Enter)
             {
+                dataLib.IsLoadingProgressBar = Visibility.Visible;
                 dataLib.ImgsItemSourse.Clear();
                 List<string> tags = new List<string>();
                 tags.Add(SearchTextBox.Text);

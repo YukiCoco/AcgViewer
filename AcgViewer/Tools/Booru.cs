@@ -29,18 +29,14 @@ namespace AcgViewer.Tools
         /// <returns></returns>
         public async void InitiallyImgs()
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                MainWindow.dataLib.IsLoadingProgressBar = Visibility.Visible;
-            }));
-
+            MainWindow.dataLib.IsLoadingProgressBar = Visibility.Visible;
             List<Post> posts = new List<Post>();
             await Task.Run(() =>
             {
                 posts = booruClient.GetPost();
             });
             
-            CommonData.CurrentPreImgDownloadCount = posts.Count;
+            //CommonData.CurrentPreImgDownloadCount = posts.Count;
             for (int i = 0; i < posts.Count; i++)
             {
                  await Task.Run(() =>
@@ -51,17 +47,10 @@ namespace AcgViewer.Tools
                     }));
                 });
             }
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                MainWindow.dataLib.IsLoadingProgressBar = Visibility.Collapsed;
-            }));
+            MainWindow.dataLib.IsLoadingProgressBar = Visibility.Collapsed;
         }
         public async void SearchPost(int page,string tags)
         {
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                MainWindow.dataLib.IsLoadingProgressBar = Visibility.Visible;
-            }));
             List<string> tagsList = new List<string>();
             foreach (var item in tags.Split(' '))
             {
@@ -72,35 +61,31 @@ namespace AcgViewer.Tools
             {
                 posts = booruClient.GetPost(page, tagsList);
                 //CommonData.PostCount = booruClient.GetPageCount(tagsList);
-                while (true)
-                {
-                    if (CommonData.CurrentPreImgDownloadCount == 0)
-                    {
-                        CommonData.CurrentPreImgDownloadCount = posts.Count;
-                        break;
-                    }
-                    else
-                    {
-                        Thread.Sleep(2000);
-                    }
-                }
+                //while (true)
+                //{
+                //    if (CommonData.CurrentPreImgDownloadCount == 0)
+                //    {
+                //        CommonData.CurrentPreImgDownloadCount = posts.Count;
+                //        break;
+                //    }
+                //    else
+                //    {
+                //        Thread.Sleep(1000);
+                //    }
+                //}
             });
             
             for (int i = 0; i < posts.Count; i++)
             {
                 await Task.Run(() =>
                 {
-                    
                     Application.Current.Dispatcher.Invoke(new Action(() =>
                     {
                         ImgShow imgShow = new ImgShow(posts[i].preview_url, posts[i].id, posts[i].preview_width, posts[i].preview_height);
                     }));
                 });
             }
-            Application.Current.Dispatcher.Invoke(new Action(() =>
-            {
-                MainWindow.dataLib.IsLoadingProgressBar = Visibility.Collapsed;
-            }));
+            MainWindow.dataLib.IsLoadingProgressBar = Visibility.Collapsed;
         }
     }
 }

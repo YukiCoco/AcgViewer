@@ -69,19 +69,14 @@ namespace AcgViewer
             Img.Width = _imgWidth;
             Img.Height = _imgHight;
             MainWindow.dataLib.ImgsItemSourse.Add(this);
-            
             Directory.CreateDirectory(Directory.GetCurrentDirectory() + "\\cache\\" + MainWindow.dataLib.SiteName);
             string imgPath = Directory.GetCurrentDirectory() + "\\" + string.Format("cache\\{0}\\{1}_preview{2}", MainWindow.dataLib.SiteName, imgID,System.IO.Path.GetExtension(imgUrl));
 
-            if (!File.Exists(imgPath))
+            if (File.Exists(imgPath))
             {
-               await Download.DownloadFile(imgUrl, imgPath);
+                File.Delete(imgPath);
             }
-            else
-            {
-                CommonData.CurrentPreImgDownloadCount--;
-            }
-            
+            await Download.DownloadFile(imgUrl, imgPath,false);
             await Task.Run(() =>
             {
                 Img.Dispatcher.BeginInvoke(new Action(() =>

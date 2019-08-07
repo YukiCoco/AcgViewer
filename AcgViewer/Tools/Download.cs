@@ -34,8 +34,10 @@ namespace AcgViewer.Tools
         }
         //总任务数
         private static int TotalImgDownloadCount { get; set; }
-        #endregion
-        #region 为WebClient设置超时
+
+        /// <summary>
+        /// 重写超时
+        /// </summary>
         public class WebClientWithTimeout : WebClient
         {
             /// <summary>
@@ -46,32 +48,54 @@ namespace AcgViewer.Tools
             protected override WebRequest GetWebRequest(Uri address)
             {
                 WebRequest wr = base.GetWebRequest(address);
-                wr.Timeout = 15000; // timeout in milliseconds (ms) 十秒钟
+                wr.Timeout = 15000; // timeout in milliseconds (ms) 十五秒钟
                 return wr;
             }
         }
         #endregion
-        /// <summary>
-        /// 下载文件
-        /// </summary>
-        /// <param name="url">Url</param>
-        /// <param name="savePath">保存路径</param>
-        public static async Task DownloadFile(string url,string savePath)
-        {
-            using (WebClient client = new WebClient())
-            {
-                try
-                {
-                    await client.DownloadFileTaskAsync(url, savePath);
-                }
-                catch
-                {
-                    throw new Exception("下载错误");
-                }
-                //client.DownloadFile(url, savePath);
-            }
-            CommonData.CurrentPreImgDownloadCount --;
-        }
+        ///// <summary>
+        ///// 下载文件
+        ///// </summary>
+        ///// <param name="url">Url</param>
+        ///// <param name="savePath">保存路径</param>
+        //public static async Task DownloadFile(string url, string savePath)
+        //{
+        //    using (WebClientWithTimeout webClient = new WebClientWithTimeout())
+        //    {
+        //        //await webClient.DownloadFileTaskAsync(url, savePath);
+        //        await Task.Run(() =>
+        //        {
+        //            bool isTimeout = false;
+        //            do
+        //            {
+        //                try
+        //                {
+        //                    webClient.DownloadFile(url, savePath);
+        //                    isTimeout = false;
+        //                }
+        //                catch (WebException we)
+        //                {
+        //                    switch (we.Status)
+        //                    {
+        //                            //超时
+        //                            case WebExceptionStatus.Timeout:
+        //                            Console.WriteLine("下载超时");
+        //                            isTimeout = true;
+        //                            break;
+        //                        default:
+        //                                //throw new Exception("网络错误");
+        //                                //downloadCompletedOrError();
+        //                            break;
+        //                    }
+        //                }
+        //            } while (isTimeout);
+        //        });
+        //    }
+        //    //client.DownloadFile(url, savePath);
+        //}
+        //CommonData.CurrentPreImgDownloadCount --;
+
+
         /// <summary>
         /// 下载图片
         /// </summary>
@@ -99,52 +123,15 @@ namespace AcgViewer.Tools
                                 Debug.WriteLine("增加后" + CurrentImgDownloadCount);
                             }
                             //开启下载线程
-                            Thread downloadThread = new Thread(new ThreadStart(() =>
+                            try
                             {
-                                bool isTimeout = false;
-                                WebClientWithTimeout webClient = new WebClientWithTimeout();
-                                do
-                                {
-                                    if (isTimeout)
-                                    {
-                                        lock (o)
-                                        {
-                                            EventHandler eventHandler = new EventHandler((object o, EventArgs e) =>
-                                            {
-                                                File.Delete(filePath);
-                                            });
-                                            webClient.Dispose();
-                                            webClient.Disposed += eventHandler;
-                                            webClient = new WebClientWithTimeout();
-                                        }
-                                    }
-                                    //webClient.DownloadFileCompleted += WebClient_DownloadFileCompleted;
-                                    try
-                                    {
-                                        webClient.DownloadFile(new Uri(item.file_url), filePath);
-                                        Debug.WriteLine(item.id + "下载完毕");
-                                        downloadCompletedOrError();
-                                        isTimeout = false;
-                                    }
-                                    catch (WebException we)
-                                    {
-                                        switch (we.Status)
-                                        {
-                                            //超时
-                                            case WebExceptionStatus.Timeout:
-                                                Console.WriteLine("下载超时");
-                                                isTimeout = true;
-                                                break;
-                                            default:
-                                                //throw new Exception("网络错误");
-                                                downloadCompletedOrError();
-                                                break;
-                                        }
-                                    }
-                                }
-                                while (isTimeout);
-                            }));
-                            downloadThread.Start();
+                                DownloadFile(item.file_url, filePath,true);
+                            }
+                            catch(Exception e)
+                            {
+                                if(e.Message == "网络错误")
+                                    DownloadCompletedOrError();
+                            }
                             #region 为异步下载设置超时
                             //webClient.DownloadFileAsync(new Uri(item.file_url), filePath);
 
@@ -176,11 +163,63 @@ namespace AcgViewer.Tools
         }
 
 
+        /// <summary>
+        /// 下载文件
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="filePath"></param>
+        /// /// <param name="isCounted">是否计数</param>
+        public static async Task DownloadFile(string url, string filePath, bool isCounted)
+        {
+            await Task.Run(() =>
+            {
+                bool isTimeout = false;
+                WebClientWithTimeout webClient = new WebClientWithTimeout();
+                do
+                {
+                    //超时重载
+                    if (isTimeout)
+                    {
+                        lock (o)
+                        {
+                            EventHandler eventHandler = new EventHandler((object o, EventArgs e) =>
+                            {
+                                File.Delete(filePath);
+                            });
+                            webClient.Dispose();
+                            webClient.Disposed += eventHandler;
+                            webClient = new WebClientWithTimeout();
+                        }
+                    }
+                    try
+                    {
+                        webClient.DownloadFile(new Uri(url), filePath);
+                        if (isCounted)
+                            DownloadCompletedOrError();//计数用于下载多个图片
+                        isTimeout = false;
+                    }
+                    catch (WebException we)
+                    {
+                        switch (we.Status)
+                        {
+                            //超时
+                            case WebExceptionStatus.Timeout:
+                                Console.WriteLine("下载超时");
+                                isTimeout = true;
+                                break;
+                            default:
+                                throw new Exception("网络错误");
+                        }
+                    }
+                }
+                while (isTimeout);
+            });
+        }
 
         /// <summary>
         /// 下载完成
         /// </summary>
-        private static void downloadCompletedOrError()
+        private static void DownloadCompletedOrError()
         {
             lock (o)
             {
