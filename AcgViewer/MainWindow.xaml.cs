@@ -116,19 +116,16 @@ namespace AcgViewer
             sites.Add(new Site { SiteName = "konachanNet", SiteUrl = "https://konachan.net/" });
             sites.Add(new Site { SiteName = "Yandere", SiteUrl = "https://yande.re/" });
             sites.Add(new Site { SiteName = "Lolibooru", SiteUrl = "https://lolibooru.moe/" });
-            sites.Add(new Site { SiteName = "Gelbooru", SiteUrl = "https://gelbooru.com/" });
             SitesListBox.ItemsSource = sites;
             dataLib.SiteName = sites[0].SiteName;
-            booru = new Tools.Booru(sites[0].SiteUrl, false);
+            booru = new Tools.Booru(sites[0].SiteUrl, CommonData.isNsfw);
             booru.InitiallyImgs();
         }
 
         private void Exit(object sender, RoutedEventArgs e)
         {
-            //dataLib.ImgsItemSourse.Add(new ImgShow(@"https://konachan.com/image/46f7c99b9bac52b84102ab6d369260bd/Konachan.com%20-%20257666%20blonde_hair%20breasts%20dress%20food%20game_cg%20glasses%20green_eyes%20green_hair%20hiyajou_maho%20huke%20long_hair%20pink_hair%20short_hair%20steins%3Bgate%20twintails.png",233));
-            //dataLib.ImgsItemSourse.Add(new ImgShow(@"F:\AnimeImgs\hozumi\387340.jpg"));
-            //imgsListBox.Items.Refresh();
-            this.Close();
+            //this.Close();
+            Process.GetCurrentProcess().Kill();
         }
 
         private void Rectangle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -227,8 +224,13 @@ namespace AcgViewer
             MenuToggleButton.IsChecked = false;
             dataLib.SiteName = sites[SitesListBox.SelectedIndex].SiteName;
             dataLib.ImgsItemSourse.Clear();
-            booru = new Tools.Booru(sites[SitesListBox.SelectedIndex].SiteUrl, false);
+            booru = new Tools.Booru(sites[SitesListBox.SelectedIndex].SiteUrl, CommonData.isNsfw);
             booru.InitiallyImgs();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://yukino.co/");
         }
     }
 }

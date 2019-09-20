@@ -37,7 +37,7 @@
                 <StackPanel HorizontalAlignment="Center"  VerticalAlignment="Top" Width="1100">
                     <Grid>
                         <Rectangle Fill="White" Height="28.5" VerticalAlignment="Top"/>
-                        <TextBlock FontSize="22" Margin="5,0,0,0"   MouseLeftButtonDown="Rectangle_MouseLeftButtonDown">Acg Viewer Beta</TextBlock>
+                        <TextBlock FontSize="22" Margin="5,0,0,0"   MouseLeftButtonDown="Rectangle_MouseLeftButtonDown">Acg Viewer</TextBlock>
                         <Button x:Name="CloseButton" Style="{DynamicResource MaterialDesignToolButton}" HorizontalAlignment="Right" Height="28" VerticalAlignment="Top" Width="40"  Click="Exit">
                             <materialDesign:PackIcon Kind="Close" d:LayoutOverrides="HorizontalAlignment" Foreground="Black"/>
                         </Button>
@@ -77,22 +77,18 @@
                         <Button ToolTip="关于作者"
                         Background="{DynamicResource SecondaryAccentBrush}"
                         Foreground="{DynamicResource SecondaryAccentForegroundBrush}"
+                                Click="Button_Click"
                        >
                             <materialDesign:PackIcon Kind="About" />
                         </Button>
                         <Button ToolTip="下载图片" 
                         Background="{DynamicResource SecondaryAccentBrush}"
                         Foreground="{DynamicResource SecondaryAccentForegroundBrush}"
-                                Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                        Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
                         >
                             <materialDesign:PackIcon Kind="Download" />
                             <Button.CommandParameter>
                                 <StackPanel Margin="10">
-                                    <!--<ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Value="0" />
-                                    <Button Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
-                                        Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                                        CommandParameter="Sample2Cancel"
-                                        HorizontalAlignment="Center">CANCEL</Button>-->
                                     <local:DownloadMsg />
                                 </StackPanel>
                             </Button.CommandParameter>
@@ -100,12 +96,12 @@
                         <Button ToolTip="设置" 
                         Background="{DynamicResource SecondaryAccentBrush}"
                         Foreground="{DynamicResource SecondaryAccentForegroundBrush}"
-                                Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
+                        Command="{x:Static materialDesign:DialogHost.OpenDialogCommand}"
                         >
                             <materialDesign:PackIcon Kind="Settings" />
                             <Button.CommandParameter>
                                 <StackPanel Margin="10">
-                                    <local:DownloadMsg />
+                                    <local:SettingsMsg />
                                 </StackPanel>
                             </Button.CommandParameter>
                         </Button>

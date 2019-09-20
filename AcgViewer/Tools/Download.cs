@@ -40,6 +40,9 @@ namespace AcgViewer.Tools
         /// </summary>
         public class WebClientWithTimeout : WebClient
         {
+            private int timeout = 10000;
+            public int Timeout { get => timeout; set => timeout = value; }
+
             /// <summary>
             /// 重写带上超时设定
             /// </summary>
@@ -48,7 +51,7 @@ namespace AcgViewer.Tools
             protected override WebRequest GetWebRequest(Uri address)
             {
                 WebRequest wr = base.GetWebRequest(address);
-                wr.Timeout = 15000; // timeout in milliseconds (ms) 十五秒钟
+                wr.Timeout = Timeout; // timeout in milliseconds (ms)
                 return wr;
             }
         }
@@ -123,15 +126,7 @@ namespace AcgViewer.Tools
                                 Debug.WriteLine("增加后" + CurrentImgDownloadCount);
                             }
                             //开启下载线程
-                            try
-                            {
-                                DownloadFile(item.file_url, filePath,true);
-                            }
-                            catch(Exception e)
-                            {
-                                if(e.Message == "网络错误")
-                                    DownloadCompletedOrError();
-                            }
+                            DownloadFile(item.file_url, filePath,true, 15000);
                             #region 为异步下载设置超时
                             //webClient.DownloadFileAsync(new Uri(item.file_url), filePath);
 
@@ -169,16 +164,16 @@ namespace AcgViewer.Tools
         /// <param name="url"></param>
         /// <param name="filePath"></param>
         /// /// <param name="isCounted">是否计数</param>
-        public static async Task DownloadFile(string url, string filePath, bool isCounted)
+        public static async Task DownloadFile(string url, string filePath, bool isCounted, int timeout)
         {
             await Task.Run(() =>
             {
-                bool isTimeout = false;
+                bool isRetry = false;
                 WebClientWithTimeout webClient = new WebClientWithTimeout();
                 do
                 {
                     //超时重载
-                    if (isTimeout)
+                    if (isRetry)
                     {
                         lock (o)
                         {
@@ -193,10 +188,11 @@ namespace AcgViewer.Tools
                     }
                     try
                     {
+                        webClient.Timeout = timeout;
                         webClient.DownloadFile(new Uri(url), filePath);
                         if (isCounted)
-                            DownloadCompletedOrError();//计数用于下载多个图片
-                        isTimeout = false;
+                            DownloadCompletedOrError();//下载图片计数
+                        isRetry = false;
                     }
                     catch (WebException we)
                     {
@@ -204,15 +200,23 @@ namespace AcgViewer.Tools
                         {
                             //超时
                             case WebExceptionStatus.Timeout:
-                                Console.WriteLine("下载超时");
-                                isTimeout = true;
+                                Debug.WriteLine("下载超时");
+                                isRetry = true;
+                                break;
+                            case WebExceptionStatus.RequestCanceled:
+                                Debug.WriteLine("请求被取消");
+                                isRetry = true;
                                 break;
                             default:
-                                throw new Exception("网络错误");
+                                if (isCounted)
+                                    DownloadCompletedOrError();
+                                Debug.WriteLine("下载错误："+ we.Status);
+                                return;
+                                //throw new Exception("网络错误");
                         }
                     }
                 }
-                while (isTimeout);
+                while (isRetry);
             });
         }
 

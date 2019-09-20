@@ -81,8 +81,12 @@
     <Compile Include="ImgViewer.xaml.cs">
       <DependentUpon>ImgViewer.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SettingsMsg.xaml.cs">
+      <DependentUpon>SettingsMsg.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Tools\Booru.cs" />
     <Compile Include="Tools\CommonData.cs" />
+    <Compile Include="Tools\ConfigFile.cs" />
     <Compile Include="Tools\Download.cs" />
     <Compile Include="Tools\UsefulTools.cs" />
     <Page Include="DownloadMsg.xaml">
@@ -112,6 +116,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="SettingsMsg.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
